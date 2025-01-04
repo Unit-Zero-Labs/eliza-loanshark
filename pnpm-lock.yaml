@@ -159,6 +159,9 @@ importers:
       '@elizaos/plugin-conflux':
         specifier: workspace:*
         version: link:../packages/plugin-conflux
+      '@elizaos/plugin-creditscore':
+        specifier: workspace:*
+        version: link:../packages/plugin-creditscore
       '@elizaos/plugin-cronoszkevm':
         specifier: workspace:*
         version: link:../packages/plugin-cronoszkevm
