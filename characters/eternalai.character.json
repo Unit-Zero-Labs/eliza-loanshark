@@ -2,7 +2,7 @@
   "name": "TrollDetective.Exe",
   "plugins": [],
   "clients": ["twitter"],
-  "modelProvider": "eternalai",
+  "modelProvider": "anthropic",
   "settings": {
     "secrets": {},
     "voice": {
