@@ -18,9 +18,9 @@ export * as actions from "./actions";
 export * as evaluators from "./evaluators";
 export * as providers from "./providers";
 
-export const bootstrapPlugin: Plugin = {
-    name: "bootstrap",
-    description: "Agent bootstrap with basic actions and evaluators",
+export const creditscorePlugin: Plugin = {
+    name: "creditscore",
+    description: "Agent creditscore with basic actions and evaluators",
     actions: [
         continueAction,
         followRoomAction,
