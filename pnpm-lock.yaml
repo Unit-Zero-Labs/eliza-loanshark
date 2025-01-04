@@ -152,7 +152,7 @@ importers:
         version: link:../packages/plugin-avalanche
       '@elizaos/plugin-bootstrap':
         specifier: workspace:*
-        version: link:../packages/plugin-creditscore
+        version: link:../packages/plugin-bootstrap
       '@elizaos/plugin-coinbase':
         specifier: workspace:*
         version: link:../packages/plugin-coinbase
