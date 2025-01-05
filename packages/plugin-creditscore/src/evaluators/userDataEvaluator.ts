@@ -1,6 +1,7 @@
 import { IAgentRuntime, Memory, State, Evaluator, ActionExample } from "@elizaos/core";
-import { composeContext, generateObject } from "@elizaos/core";
+import { composeContext, generateObject, generateText } from "@elizaos/core";
 import { ModelClass } from "@elizaos/core";
+import { z } from 'zod';
 
 interface UserData {
     name?: string;
@@ -41,6 +42,12 @@ Response should be a JSON object in a markdown block:
 }
 \`\`\``;
 
+const userDataSchema = z.object({
+    name: z.string().nullable(),
+    location: z.string().nullable(),
+    occupation: z.string().nullable()
+});
+
 export const userDataEvaluator: Evaluator = {
     name: "GET_USER_DATA",
     similes: ["EXTRACT_USER_INFO", "GET_USER_INFO", "COLLECT_USER_DATA"],
@@ -55,6 +62,7 @@ export const userDataEvaluator: Evaluator = {
     },
 
     handler: async (runtime: IAgentRuntime, message: Memory, state?: State): Promise<void> => {
+        console.log("userDataEvaluator handler called");
         if (!state?.senderName) return;
 
         const context = composeContext({
@@ -62,28 +70,34 @@ export const userDataEvaluator: Evaluator = {
             template: USER_DATA_TEMPLATE
         });
 
-        const extracted = await generateObject({
-            runtime,
-            context,
-            modelClass: ModelClass.LARGE
-        }) as UserData | null;
+        try {
+            const response = await generateText({
+                runtime,
+                context,
+                modelClass: ModelClass.SMALL
+            });
 
-        if (!extracted) return;
+            const jsonMatch = response.match(/```json\n([\s\S]*?)\n```/);
+            if (!jsonMatch) return;
 
-        const cacheKey = getCacheKey(runtime, state.senderName);
-        const currentData = await runtime.cacheManager.get<UserData>(cacheKey) || {};
+            const parsed = JSON.parse(jsonMatch[1]);
+            const extracted = userDataSchema.parse(parsed);
 
-        // Only update fields that are newly extracted and non-null
-        const updatedData = {
-            ...currentData,
-            ...(extracted.name && { name: extracted.name }),
-            ...(extracted.location && { location: extracted.location }),
-            ...(extracted.occupation && { occupation: extracted.occupation })
-        };
+            const cacheKey = getCacheKey(runtime, state.senderName);
+            const currentData = await runtime.cacheManager.get<UserData>(cacheKey) || {};
 
-        // Only save if we have new information
-        if (JSON.stringify(currentData) !== JSON.stringify(updatedData)) {
-            await runtime.cacheManager.set(cacheKey, updatedData);
+            const updatedData = {
+                ...currentData,
+                ...(extracted.name && { name: extracted.name }),
+                ...(extracted.location && { location: extracted.location }),
+                ...(extracted.occupation && { occupation: extracted.occupation })
+            };
+
+            if (JSON.stringify(currentData) !== JSON.stringify(updatedData)) {
+                await runtime.cacheManager.set(cacheKey, updatedData);
+            }
+        } catch (error) {
+            console.error('Error in userDataEvaluator:', error);
         }
     },
 

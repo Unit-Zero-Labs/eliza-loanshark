@@ -52,6 +52,7 @@ Response should be a JSON object array inside a JSON markdown block. Correct res
 \`\`\``;
 
 async function handler(runtime: IAgentRuntime, message: Memory) {
+    console.log("factEvaluator handler called");
     const state = await runtime.composeState(message);
 
     const { agentId, roomId } = state;
